@@ -1,0 +1,6 @@
+@FareService_HostAddress = http://localhost:5081
+
+GET {{FareService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
