@@ -1,4 +1,20 @@
+using MongoDB.Driver;
+using BookingService.Models;
+using BookingService.Services;
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<IMongoClient>(s =>
+    new MongoClient("mongodb://localhost:27017"));
+
+builder.Services.AddScoped<IMongoDatabase>(s =>
+    s.GetRequiredService<IMongoClient>().GetDatabase("CabBookingDB"));
+
+builder.Services.AddScoped<IMongoCollection<Booking>>(s =>
+    s.GetRequiredService<IMongoDatabase>().GetCollection<Booking>("Bookings"));
+
+builder.Services.AddScoped<BookingService.Services.BookingService>();
 
 // Add services to the container.
 
@@ -15,8 +31,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
