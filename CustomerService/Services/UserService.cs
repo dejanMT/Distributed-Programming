@@ -1,0 +1,53 @@
+﻿using CustomerService.Data;
+using CustomerService.Models;
+using Microsoft.EntityFrameworkCore;
+using Middleware;
+using MongoDB.Driver;
+
+namespace CustomerService.Services
+{
+    public class UserService
+    {
+        private readonly IMongoCollection<User> _users;
+        private readonly IEncryptor _encryptor;
+
+        public UserService(IMongoCollection<User> users, IEncryptor encryptor)
+        {
+            _users = users;
+            _encryptor = encryptor;
+        }
+
+        public async Task<User?> Register(User user)
+        {
+            var existing = await _users.Find(u => u.Email == user.Email).FirstOrDefaultAsync();
+            if (existing != null) return null;
+
+            user.SetPassword(user.Password!, _encryptor);
+
+            await _users.InsertOneAsync(user);
+            return user;
+        }
+
+        public async Task<User?> Login(string email, string password)
+        {
+            var user = await _users.Find(u => u.Email == email).FirstOrDefaultAsync();
+            if (user == null) return null;
+
+            return user.ValidatePassword(password, _encryptor) ? user : null;
+        }
+
+        public async Task<User?> GetUserByEmail(string email)
+        {
+            return await _users.Find(u => u.Email == email).FirstOrDefaultAsync();
+        }
+
+        public async Task<User?> GetUserDetails(string email)
+        {
+            var user = await _users.Find(u => u.Email == email).FirstOrDefaultAsync();
+            if (user == null) return null;
+            user.Password = null;
+            return user;
+        }
+
+    }
+}
