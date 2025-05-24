@@ -11,14 +11,15 @@ builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient("mongodb://loca
 builder.Services.AddScoped(s => s.GetRequiredService<IMongoClient>().GetDatabase("CabBookingDB"));
 builder.Services.AddScoped(s => s.GetRequiredService<IMongoDatabase>().GetCollection<Payment>("Payments"));
 
+builder.Services.AddHttpClient<PaymentServices>();
 //builder.Services.AddScoped<PaymentService.Services.PaymentServices>();
 
-builder.Services.AddScoped<PaymentServices>(s =>
-{
-    var collection = s.GetRequiredService<IMongoCollection<Payment>>();
-    var httpClient = new HttpClient();
-    return new PaymentServices(collection, httpClient, apiKey, host);
-});
+//builder.Services.AddScoped<PaymentServices>(s =>
+//{
+//    var collection = s.GetRequiredService<IMongoCollection<Payment>>();
+//    var httpClient = new HttpClient();
+//    return new PaymentServices(collection, httpClient, apiKey, host);
+//});
 
 
 builder.Services.AddControllers();

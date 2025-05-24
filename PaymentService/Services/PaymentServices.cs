@@ -13,12 +13,12 @@ namespace PaymentService.Services
         private readonly string apiKey;
         private readonly string host;
 
-        public PaymentServices(IMongoCollection<Payment> payments, HttpClient httpClient, string apikey, string host)
+        public PaymentServices(IMongoCollection<Payment> payments, HttpClient httpClient, IConfiguration config)
         {
             _payments = payments;
             _httpClient = httpClient;
-            apiKey = apikey;
-            host = host;
+            apiKey = config["TaxiAPI:Key"]!;
+            host = config["TaxiAPI:Host"]!;
         }
 
         public async Task<decimal> GetTaxiFareAsync(decimal startLatitude, decimal startLongitude, decimal endLatitude, decimal endLongitude)
@@ -27,7 +27,7 @@ namespace PaymentService.Services
 
             using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
             request.Headers.Add("X-RapidAPI-Key", apiKey);
-            request.Headers.Add("X-RapidAPI-Host", "taxi-fare-calculator.p.rapidapi.com");
+            request.Headers.Add("X-RapidAPI-Host", host);
 
             using var response = await _httpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode)
