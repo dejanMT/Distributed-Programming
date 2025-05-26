@@ -18,6 +18,7 @@ builder.Services.AddScoped<IMongoCollection<User>>(s =>
 
 builder.Services.AddTransient<IEncryptor, Encryptor>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<NotificationService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

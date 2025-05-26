@@ -137,8 +137,33 @@ namespace PaymentService.Services
             payment.DiscountApplied = applyDiscount;
 
             await _payments.InsertOneAsync(payment);
+
+  
+            var pastPayments = await _payments.Find(p => p.UserEmail == payment.UserEmail).ToListAsync();
+            var nonDiscountedCount = pastPayments.Count(p => p.DiscountApplied == false);
+
+            if (nonDiscountedCount == 3)
+            {
+                using var eventClient = new HttpClient();
+                var notifyUrl = $"https://localhost:7094/api/Notification/discount?email={payment.UserEmail}";
+
+                try
+                {
+                    var response = await eventClient.PostAsync(notifyUrl, null);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine($"Notification failed: {response.StatusCode}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Notification error: {ex.Message}");
+                }
+            }
+
             return payment;
         }
+
 
 
         public async Task<List<Payment>> GetPayments(string email)
