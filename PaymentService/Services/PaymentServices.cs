@@ -137,15 +137,35 @@ namespace PaymentService.Services
             payment.DiscountApplied = applyDiscount;
 
             await _payments.InsertOneAsync(payment);
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(TimeSpan.FromMinutes(3));
 
-  
-            var pastPayments = await _payments.Find(p => p.UserEmail == payment.UserEmail).ToListAsync();
-            var nonDiscountedCount = pastPayments.Count(p => p.DiscountApplied == false);
+                var rideInfo = $"Your cab is waiting for you. Pickup: ({payment.StartLatitude}, {payment.StartLongitude}) → Drop-off: ({payment.EndLatitude}, {payment.EndLongitude}), Reference No. {payment.BookingId}";
+                var notifyUrl = $"https://localhost:7207/api/Notification/cabready?email={payment.UserEmail}";
+
+                try
+                {
+                    using var client = new HttpClient();
+                    var content = new StringContent($"\"{rideInfo}\"", System.Text.Encoding.UTF8, "application/json");
+                    var response = await client.PostAsync(notifyUrl, content);
+                    Console.WriteLine($"cab notification sent: {response.StatusCode}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            });
+
+
+
+            var pastBookings = await _payments.Find(p => p.UserEmail == payment.UserEmail).ToListAsync();
+            var nonDiscountedCount = pastBookings.Count(p => p.DiscountApplied == false);
 
             if (nonDiscountedCount == 3)
             {
                 using var eventClient = new HttpClient();
-                var notifyUrl = $"https://localhost:7094/api/Notification/discount?email={payment.UserEmail}";
+                var notifyUrl = $"https://localhost:7207/api/Notification/discount?email={payment.UserEmail}";
 
                 try
                 {

@@ -5,11 +5,11 @@ namespace CustomerService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class NotificationController : ControllerBase
+    public class NotificationsController : ControllerBase
     {
         private readonly NotificationService _service;
 
-        public NotificationController(NotificationService service)
+        public NotificationsController(NotificationService service)
         {
             _service = service;
         }

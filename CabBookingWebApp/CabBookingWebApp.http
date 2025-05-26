@@ -1,6 +1,0 @@
-@CabBookingWebApp_HostAddress = http://localhost:5108
-
-GET {{CabBookingWebApp_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

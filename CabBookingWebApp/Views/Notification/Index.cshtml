@@ -1,0 +1,19 @@
+﻿@model List<CabBookingWebApp.Models.Notification>
+
+<h2>Your Notifications</h2>
+
+@if (Model == null || !Model.Any())
+{
+    <p>No notifications found.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var note in Model.OrderByDescending(n => n.Date))
+        {
+            <li class="list-group-item">
+                <strong>@note.Date.ToLocalTime().ToShortDateString()</strong> - @note.Message
+            </li>
+        }
+    </ul>
+}

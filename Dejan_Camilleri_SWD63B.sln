@@ -13,11 +13,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocationService", "Location
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GatewayAPI", "GatewayAPI\GatewayAPI.csproj", "{8602CD41-D472-4ADF-8632-55510D1B38E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CabBookingWebApp", "CabBookingWebApp\CabBookingWebApp.csproj", "{66C03A79-7EA9-4433-85B7-AE08965E6BD8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Middleware", "Middleware\Middleware.csproj", "{D28A15AE-A29F-40EB-96B9-2DDAA5CD8095}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookingService", "BookingService\BookingService.csproj", "{C237F7A6-830E-46DE-BA14-1EE65C6BC80A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CabBookingWebApp", "CabBookingWebApp\CabBookingWebApp.csproj", "{3D56D329-3506-45DC-ADF0-68FC3D0D375E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,10 +45,6 @@ Global
 		{8602CD41-D472-4ADF-8632-55510D1B38E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8602CD41-D472-4ADF-8632-55510D1B38E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8602CD41-D472-4ADF-8632-55510D1B38E1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{66C03A79-7EA9-4433-85B7-AE08965E6BD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{66C03A79-7EA9-4433-85B7-AE08965E6BD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{66C03A79-7EA9-4433-85B7-AE08965E6BD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{66C03A79-7EA9-4433-85B7-AE08965E6BD8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D28A15AE-A29F-40EB-96B9-2DDAA5CD8095}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D28A15AE-A29F-40EB-96B9-2DDAA5CD8095}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D28A15AE-A29F-40EB-96B9-2DDAA5CD8095}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -57,6 +53,10 @@ Global
 		{C237F7A6-830E-46DE-BA14-1EE65C6BC80A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C237F7A6-830E-46DE-BA14-1EE65C6BC80A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C237F7A6-830E-46DE-BA14-1EE65C6BC80A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D56D329-3506-45DC-ADF0-68FC3D0D375E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D56D329-3506-45DC-ADF0-68FC3D0D375E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D56D329-3506-45DC-ADF0-68FC3D0D375E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D56D329-3506-45DC-ADF0-68FC3D0D375E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

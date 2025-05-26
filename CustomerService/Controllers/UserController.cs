@@ -36,5 +36,20 @@ namespace CustomerService.Controllers
             var user = await _userService.GetUserDetails(email);
             return user == null ? NotFound() : Ok(user);
         }
+
+        [HttpGet("{email}/notifications")]
+        public async Task<IActionResult> GetUserNotifications(string email)
+        {
+            var user = await _userService.GetUserByEmail(email);
+            if (user == null)
+                return NotFound();
+
+            if (user.Notifications == null)
+            {
+                return Ok(new List<Notification>());
+            }
+            return Ok(user.Notifications);
+        }
+
     }
 }
