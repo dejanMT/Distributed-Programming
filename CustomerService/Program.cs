@@ -4,6 +4,9 @@ using CustomerService.Services;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using CustomerService.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Logging;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,12 +23,19 @@ builder.Services.AddTransient<IEncryptor, Encryptor>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<NotificationService>();
 
+builder.Services.AddScoped<IJwtBuilder, JwtBuilder>();
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddJwtAuthentication(builder.Configuration);
+
 var app = builder.Build();
+
+IdentityModelEventSource.ShowPII = true;
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -35,6 +45,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

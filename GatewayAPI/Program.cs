@@ -14,6 +14,11 @@ builder.Services.AddHttpClient("Payment", c =>
     c.BaseAddress = new Uri("https://localhost:7094");
 });
 
+builder.Services.AddHttpClient("Location", c =>
+{
+    c.BaseAddress = new Uri("https://localhost:7188");
+});
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

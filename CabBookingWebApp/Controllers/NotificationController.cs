@@ -48,6 +48,11 @@ namespace CabBookingWebApp.Controllers
                 return Content("Failed to load notifications.");
 
             var json = await response.Content.ReadAsStringAsync();
+
+
+            if (string.IsNullOrWhiteSpace(json))
+                return View(new List<Notification>());
+
             var notifications = JsonSerializer.Deserialize<List<Notification>>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true

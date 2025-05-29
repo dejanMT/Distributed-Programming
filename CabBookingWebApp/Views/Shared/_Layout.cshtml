@@ -26,6 +26,31 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
+
+                    <ul class="navbar-nav">
+                        @if (string.IsNullOrEmpty(Context.Session.GetString("userEmail")))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">My Account</a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Login">Login</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Signup">Sign up</a></li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    @Context.Session.GetString("userEmail")
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" asp-controller="Notification" asp-action="Index">Notifications</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Logout">Sign out</a></li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
                 </div>
             </div>
         </nav>

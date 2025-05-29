@@ -1,8 +1,88 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5">
+    <div class="row mb-4 text-center">
+        <h2>Welcome to CabBooking 🚕</h2>
+        <p class="text-muted">Book your ride, check the weather, and manage your profile — all in one place.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Book a Cab -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Book a Cab</h5>
+                    <form asp-action="BookCab" asp-controller="Home" method="post">
+                        <div class="mb-2">
+                            <label class="form-label">Start Latitude</label>
+                            <input name="StartLatitude" type="number" step="any" class="form-control" required />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Start Longitude</label>
+                            <input name="StartLongitude" type="number" step="any" class="form-control" required />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">End Latitude</label>
+                            <input name="EndLatitude" type="number" step="any" class="form-control" required />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">End Longitude</label>
+                            <input name="EndLongitude" type="number" step="any" class="form-control" required />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Cab Type</label>
+                            <select name="CabType" class="form-select">
+                                <option value="Economic">Economic</option>
+                                <option value="Premium">Premium</option>
+                                <option value="Executive">Executive</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Passengers</label>
+                            <input name="Passengers" type="number" min="1" max="8" class="form-control" required />
+                        </div>
+                        <input type="hidden" name="BookingTime" value="@DateTime.UtcNow.ToString("o")" />
+                        <input type="hidden" name="UserEmail" value="@Context.Session.GetString("userEmail")" />
+                        <button type="submit" class="btn btn-primary w-100">Confirm Booking</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Check Weather -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Check Weather</h5>
+                    <form asp-action="CheckWeather" asp-controller="Home" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Location ID</label>
+                            <input name="locationId" type="text" class="form-control" placeholder="Enter location ID" required />
+                        </div>
+                        <button type="submit" class="btn btn-info w-100">Get Weather</button>
+                    </form>
+
+                    @if (ViewBag.WeatherResult != null)
+                    {
+                        <div class="mt-3 alert alert-info">
+                            @ViewBag.WeatherResult
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Link -->
+    <div class="row mt-5">
+        <div class="col text-center">
+            <a class="btn btn-outline-secondary" asp-controller="Notification" asp-action="Index">
+                View Notifications 🔔
+            </a>
+        </div>
+    </div>
 </div>
