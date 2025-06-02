@@ -20,10 +20,47 @@ public class HomeController : Controller
         _config = config;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
+        var email = HttpContext.Session.GetString("userEmail");
+        if (string.IsNullOrEmpty(email))
+            return RedirectToAction("Login");
+
+        var client = _clientFactory.CreateClient();
+        var baseUrl = _config["GatewayApi:BaseUrl"];
+        var locationsResponse = await client.GetAsync($"{baseUrl}/api/UserGateway/locations/{email}");
+        var locationsJson = await locationsResponse.Content.ReadAsStringAsync();
+
+        var locations = JsonSerializer.Deserialize<List<Location>>(locationsJson, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+
+        var weatherList = new List<LocationWeatherViewModel>();
+
+        foreach (var loc in locations)
+        {
+            var weatherResponse = await client.GetAsync($"{baseUrl}/api/UserGateway/weather/{loc.Id}");
+            var weatherJson = await weatherResponse.Content.ReadAsStringAsync();
+            var weather = JsonSerializer.Deserialize<WeatherResponse>(weatherJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (weather != null)
+            {
+                weatherList.Add(new LocationWeatherViewModel
+                {
+                    LocationName = loc.Name,
+                    Address = loc.Address,
+                    Result = weather.Result,
+                    Temperature = weather.Temperature
+                });
+            }
+        }
+
+        ViewBag.WeatherList = weatherList;
         return View();
     }
+
 
     public IActionResult Privacy()
     {
@@ -54,7 +91,7 @@ public class HomeController : Controller
         if (response.IsSuccessStatusCode)
         {
             HttpContext.Session.SetString("userEmail", model.Email);
-            return RedirectToAction("Index", "Notification");
+            return RedirectToAction("Index", "Home");
         }
 
         ViewBag.Error = "Invalid login.";
@@ -106,45 +143,66 @@ public class HomeController : Controller
         return View();
     }
 
-    [HttpPost("checkWeather")]
+    /// <summary>
+    /// Get weather by id (NOT IN USE)
+    /// </summary>
+    /// <param name="locationId"></param>
+    /// <returns></returns>
     public async Task<IActionResult> CheckWeather(string locationId)
     {
-        var client = _clientFactory.CreateClient();
-        var response = await client.GetAsync($"{_config["GatewayApi:BaseUrl"]}/api/UserGateway/weather/{locationId}");
+        var email = HttpContext.Session.GetString("userEmail");
+        if (string.IsNullOrEmpty(email)) return RedirectToAction("Login");
 
-        if (response.IsSuccessStatusCode)
+        // Get weather
+        var weatherResponse = await _clientFactory.CreateClient().GetAsync($"{_config["GatewayApi:BaseUrl"]}/api/UserGateway/weather/{locationId}");
+        var weatherJson = await weatherResponse.Content.ReadAsStringAsync();
+        var weather = JsonSerializer.Deserialize<WeatherResponse>(weatherJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        var locResponse = await _clientFactory.CreateClient().GetAsync($"{_config["GatewayApi:BaseUrl"]}/api/UserGateway/location/{locationId}");
+        var locationJson = await locResponse.Content.ReadAsStringAsync();
+        var root = JsonDocument.Parse(locationJson);
+        var inner = root.RootElement.GetProperty("result").GetRawText();
+        var location = JsonSerializer.Deserialize<Location>(inner, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        if (weather != null && location != null)
         {
-            var json = await response.Content.ReadAsStringAsync();
-            ViewBag.WeatherResult = json;
-            return View("Index");
+            ViewBag.Weather = new LocationWeatherViewModel
+            {
+                LocationName = location.Name,
+                Address = location.Address,
+                Result = weather.Result,
+                Temperature = weather.Temperature
+            };
         }
 
-        ViewBag.WeatherResult = "Failed to get weather info.";
         return View("Index");
     }
 
 
 
     [HttpPost]
-    public async Task<IActionResult> BookCab(Payment model)
+    public async Task<IActionResult> BookCab(Payment model, bool applyDiscount = false)
     {
+
+         model.BookingId = Guid.NewGuid().ToString();
+        var client = _clientFactory.CreateClient();
         var json = JsonSerializer.Serialize(model);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var client = _clientFactory.CreateClient();
-        var response = await client.PostAsync($"{_config["GatewayApi:BaseUrl"]}/api/PaymentGateway/create?discount=true", content);
+        var response = await client.PostAsync($"{_config["GatewayApi:BaseUrl"]}/api/UserGateway/payment?discount={applyDiscount}", content);
 
         if (response.IsSuccessStatusCode)
         {
-            ViewBag.BookingSuccess = "Cab successfully booked";
-            return View("Index");
+            TempData["Message"] = "Cab booked successfully!";
+        }
+        else
+        {
+            TempData["Message"] = "Cab booking failed!";
         }
 
-        ViewBag.BookingError = "Cab booking failed";
-        return View("Index");
-
-
+        return RedirectToAction("Index");
     }
+
 
 
 

@@ -16,24 +16,6 @@ namespace CabBookingWebApp.Controllers
             _config = config;
         }
 
-        //public async Task<IActionResult> Index(string email)
-        //{
-        //    if (string.IsNullOrWhiteSpace(email))
-        //        return BadRequest("Missing email");
-
-        //    var response = await _httpClientFactory.CreateClient().GetAsync($"{_config["GatewayApi:BaseUrl"]}/api/UserGateway/{email}/notifications");
-
-        //    if (!response.IsSuccessStatusCode)
-        //        return Content("Failed to load notifications.");
-
-        //    var json = await response.Content.ReadAsStringAsync();
-        //    var notifications = JsonSerializer.Deserialize<List<Notification>>(json, new JsonSerializerOptions
-        //    {
-        //        PropertyNameCaseInsensitive = true
-        //    });
-
-        //    return View(notifications);
-        //}
 
         public async Task<IActionResult> Index()
         {
@@ -55,8 +37,10 @@ namespace CabBookingWebApp.Controllers
 
             var notifications = JsonSerializer.Deserialize<List<Notification>>(json, new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
+
 
             return View(notifications);
         }

@@ -21,45 +21,63 @@ namespace PaymentService.Services
             host = config["TaxiAPI:Host"]!;
         }
 
+        //public async Task<decimal> GetTaxiFareAsync(decimal startLatitude, decimal startLongitude, decimal endLatitude, decimal endLongitude)
+        //{
+        //    var requestUrl = $"https://taxi-fare-calculator.p.rapidapi.com/search-geo?dep_lat={startLatitude}&dep_lng={startLongitude}&arr_lat={endLatitude}&arr_lng={endLongitude}";
+
+        //    using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+        //    request.Headers.Add("X-RapidAPI-Key", apiKey);
+        //    request.Headers.Add("X-RapidAPI-Host", host);
+
+        //    using var response = await _httpClient.SendAsync(request);
+        //    if (!response.IsSuccessStatusCode)
+        //    {
+        //        throw new HttpRequestException($"request failed - status code: {response.StatusCode}");
+        //    }
+
+        //    var jsonResponse = await response.Content.ReadAsStringAsync();
+        //    using var document = JsonDocument.Parse(jsonResponse);
+        //    var root = document.RootElement;
+
+        //    if (!root.TryGetProperty("journey", out var journey))
+        //    {
+        //        throw new Exception("journey is missing from the response");
+        //    }
+
+        //    if (!journey.TryGetProperty("fares", out var fares) ||  fares.GetArrayLength() == 0 || fares.ValueKind != JsonValueKind.Array)
+        //    {
+        //        throw new Exception("fares is missing from the array");
+        //    }
+
+        //    var firstFare = fares[0];
+
+        //    if (!firstFare.TryGetProperty("price_in_cents", out var priceElement) || priceElement.ValueKind != JsonValueKind.Number)
+        //    {
+        //        throw new Exception("'price_in_cents is missing");
+        //    }
+
+        //    var cents = priceElement.GetInt32();
+        //    return cents / 100m;
+        //}
+
         public async Task<decimal> GetTaxiFareAsync(decimal startLatitude, decimal startLongitude, decimal endLatitude, decimal endLongitude)
         {
-            var requestUrl = $"https://taxi-fare-calculator.p.rapidapi.com/search-geo?dep_lat={startLatitude}&dep_lng={startLongitude}&arr_lat={endLatitude}&arr_lng={endLongitude}";
+            // Build the FareService URL (replace with your actual FareService URL)
+            var requestUrl = $"https://localhost:7183/api/Fare/estimate?startLatitude={startLatitude}&startLongitude={startLongitude}&endLatitude={endLatitude}&endLongitude={endLongitude}";
 
-            using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
-            request.Headers.Add("X-RapidAPI-Key", apiKey);
-            request.Headers.Add("X-RapidAPI-Host", host);
+            var response = await _httpClient.GetAsync(requestUrl);
 
-            using var response = await _httpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException($"request failed - status code: {response.StatusCode}");
+                throw new HttpRequestException($"FareService request failed - status code: {response.StatusCode}");
             }
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
             using var document = JsonDocument.Parse(jsonResponse);
-            var root = document.RootElement;
+            var fare = document.RootElement.GetProperty("fare").GetDecimal();
 
-            if (!root.TryGetProperty("journey", out var journey))
-            {
-                throw new Exception("journey is missing from the response");
-            }
-
-            if (!journey.TryGetProperty("fares", out var fares) ||  fares.GetArrayLength() == 0 || fares.ValueKind != JsonValueKind.Array)
-            {
-                throw new Exception("fares is missing from the array");
-            }
-
-            var firstFare = fares[0];
-
-            if (!firstFare.TryGetProperty("price_in_cents", out var priceElement) || priceElement.ValueKind != JsonValueKind.Number)
-            {
-                throw new Exception("'price_in_cents is missing");
-            }
-
-            var cents = priceElement.GetInt32();
-            return cents / 100m;
+            return fare;
         }
-
 
 
 

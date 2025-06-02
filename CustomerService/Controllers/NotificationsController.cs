@@ -16,6 +16,16 @@ namespace CustomerService.Controllers
             _users = users;
         }
 
+        [HttpGet("{email}/notifications")]
+        public async Task<IActionResult> GetNotifications(string email)
+        {
+            var user = await _users.Find(u => u.Email == email).FirstOrDefaultAsync();
+            if (user == null)
+                return NotFound("User not found");
+
+            return Ok(user.Notifications ?? new List<Notification>());
+        }
+
         [HttpPost("cabready")]
         public async Task<IActionResult> NotifyCabReady(string email, [FromBody] string rideMessage)
         {

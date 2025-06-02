@@ -14,4 +14,8 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CabBookingWebApp\CabBookingWebApp.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -11,5 +11,11 @@
         public string? CabType { get; set; }
         public int Passengers { get; set; }
         public DateTime BookingTime { get; set; }
+
+        public decimal BaseFare { get; set; }
+        public decimal Total { get; set; }
+        public bool DiscountApplied { get; set; }
+
+
     }
 }

@@ -1,88 +1,111 @@
 ﻿@{
     ViewData["Title"] = "Home";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string GetWeatherIcon(string result)
+    {
+        result = result.ToLower();
+        if (result.Contains("sun")) return "☀️";
+        if (result.Contains("cloud")) return "☁️";
+        if (result.Contains("rain")) return "🌧️";
+        if (result.Contains("storm")) return "⛈️";
+        if (result.Contains("snow")) return "❄️";
+        return "🌡️";
+    }
+
+    var isLoggedIn = !string.IsNullOrEmpty(Context.Session.GetString("userEmail"));
 }
 
 <div class="container mt-5">
     <div class="row mb-4 text-center">
-        <h2>Welcome to CabBooking 🚕</h2>
-        <p class="text-muted">Book your ride, check the weather, and manage your profile — all in one place.</p>
+        <h2>Welcome to CabBooking</h2>
+        <p class="text-muted">Book your ride, check the weather — all in one place.</p>
     </div>
+    @if (isLoggedIn){
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Book a Cab</h5>
+                        <form asp-action="BookCab" asp-controller="Home" method="post">
+                            <div class="mb-2">
+                                <label class="form-label">Start Latitude</label>
+                                <input name="StartLatitude" type="number" step="any" class="form-control" required />
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Start Longitude</label>
+                                <input name="StartLongitude" type="number" step="any" class="form-control" required />
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">End Latitude</label>
+                                <input name="EndLatitude" type="number" step="any" class="form-control" required />
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">End Longitude</label>
+                                <input name="EndLongitude" type="number" step="any" class="form-control" required />
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Cab Type</label>
+                                <select name="CabType" class="form-select">
+                                    <option value="Economic">Economic</option>
+                                    <option value="Premium">Premium</option>
+                                    <option value="Executive">Executive</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Passengers</label>
+                                <input name="Passengers" type="number" min="1" max="8" class="form-control" required />
+                            </div>
+                            <input type="hidden" name="BookingTime" value="@DateTime.UtcNow.ToString("o")" />
+                            <input type="hidden" name="UserEmail" value="@Context.Session.GetString("userEmail")" />
+                            <input type="checkbox" name="applyDiscount" value="true" /> Apply Discount
+                            <button type="submit" class="btn btn-primary w-100">Confirm Booking</button>
+                        </form>
 
-    <div class="row g-4">
-        <!-- Book a Cab -->
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Book a Cab</h5>
-                    <form asp-action="BookCab" asp-controller="Home" method="post">
-                        <div class="mb-2">
-                            <label class="form-label">Start Latitude</label>
-                            <input name="StartLatitude" type="number" step="any" class="form-control" required />
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Start Longitude</label>
-                            <input name="StartLongitude" type="number" step="any" class="form-control" required />
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">End Latitude</label>
-                            <input name="EndLatitude" type="number" step="any" class="form-control" required />
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">End Longitude</label>
-                            <input name="EndLongitude" type="number" step="any" class="form-control" required />
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Cab Type</label>
-                            <select name="CabType" class="form-select">
-                                <option value="Economic">Economic</option>
-                                <option value="Premium">Premium</option>
-                                <option value="Executive">Executive</option>
-                            </select>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Passengers</label>
-                            <input name="Passengers" type="number" min="1" max="8" class="form-control" required />
-                        </div>
-                        <input type="hidden" name="BookingTime" value="@DateTime.UtcNow.ToString("o")" />
-                        <input type="hidden" name="UserEmail" value="@Context.Session.GetString("userEmail")" />
-                        <button type="submit" class="btn btn-primary w-100">Confirm Booking</button>
-                    </form>
-
+                    </div>
                 </div>
             </div>
+
+
+            @if (ViewBag.WeatherList != null)
+            {
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Your Favorite Locations — Weather Now</h5>
+                            @foreach (var weather in (List<LocationWeatherViewModel>)ViewBag.WeatherList)
+                            {
+                                var icon = GetWeatherIcon(weather.Result);
+
+                                <div class="card mb-3 shadow-sm border-info bg-light">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="me-3 display-4">@icon</div>
+                                        <div>
+                                            <h5 class="card-title">@weather.LocationName</h5>
+                                            <p class="text-muted mb-0">@weather.Address</p>
+                                            <p class="fw-bold mt-1">@weather.Result</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
         </div>
 
-        <!-- Check Weather -->
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Check Weather</h5>
-                    <form asp-action="CheckWeather" asp-controller="Home" method="post">
-                        <div class="mb-3">
-                            <label class="form-label">Location ID</label>
-                            <input name="locationId" type="text" class="form-control" placeholder="Enter location ID" required />
-                        </div>
-                        <button type="submit" class="btn btn-info w-100">Get Weather</button>
-                    </form>
-
-                    @if (ViewBag.WeatherResult != null)
-                    {
-                        <div class="mt-3 alert alert-info">
-                            @ViewBag.WeatherResult
-                        </div>
-                    }
-                </div>
+        <div class="row mt-5">
+            <div class="col text-center">
+                <a class="btn btn-outline-secondary" asp-controller="Notification" asp-action="Index">
+                    View Notifications 🔔
+                </a>
             </div>
         </div>
-    </div>
-
-    <!-- Notification Link -->
-    <div class="row mt-5">
-        <div class="col text-center">
-            <a class="btn btn-outline-secondary" asp-controller="Notification" asp-action="Index">
-                View Notifications 🔔
-            </a>
+    } else {
+        <div class="container text-center mt-5">
+            <h3>Please login to access the service</h3>
+            <a class="btn btn-primary mt-3" asp-controller="Home" asp-action="Login">Login</a>
         </div>
-    </div>
+    }
 </div>
