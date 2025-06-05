@@ -10,13 +10,31 @@ using Microsoft.IdentityModel.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<IMongoClient>(s =>
-    new MongoClient("mongodb://localhost:27017"));
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(Int32.Parse(port));
+});
 
-builder.Services.AddScoped<IMongoDatabase>(s =>
+//To test locally
+//builder.Services.AddSingleton<IMongoClient>(s =>
+//    new MongoClient("mongodb://localhost:27017"));
+//builder.Services.AddScoped<IMongoDatabase>(s =>
+//    s.GetRequiredService<IMongoClient>().GetDatabase("CabBookingDB"));
+//builder.Services.AddScoped<IMongoCollection<User>>(s =>
+//    s.GetRequiredService<IMongoDatabase>().GetCollection<User>("Users"));
+
+//To connect to MongoDB Atlas
+//builder.Services.AddSingleton<IMongoClient>(s =>
+//    new MongoClient(builder.Configuration.GetSection("MongoDB:ConnectionString").Value));
+
+//For deplyment 
+builder.Services.AddSingleton<IMongoClient>(s => 
+    new MongoClient(builder.Configuration.GetSection("MongoDB").Value));
+
+builder.Services.AddScoped(s =>
     s.GetRequiredService<IMongoClient>().GetDatabase("CabBookingDB"));
-
-builder.Services.AddScoped<IMongoCollection<User>>(s =>
+builder.Services.AddScoped(s =>
     s.GetRequiredService<IMongoDatabase>().GetCollection<User>("Users"));
 
 builder.Services.AddTransient<IEncryptor, Encryptor>();

@@ -4,9 +4,22 @@ using LocationService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient("mongodb://localhost:27017"));
-builder.Services.AddScoped(s => s.GetRequiredService<IMongoClient>().GetDatabase("CabBookingDB"));
-builder.Services.AddScoped(s => s.GetRequiredService<IMongoDatabase>().GetCollection<Location>("Locations"));
+//builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient("mongodb://localhost:27017"));
+//builder.Services.AddScoped(s => s.GetRequiredService<IMongoClient>().GetDatabase("CabBookingDB"));
+//builder.Services.AddScoped(s => s.GetRequiredService<IMongoDatabase>().GetCollection<Location>("Locations"));
+
+//To connect to MongoDB Atlas
+//builder.Services.AddSingleton<IMongoClient>(s =>
+//    new MongoClient(builder.Configuration.GetSection("MongoDB:ConnectionString").Value));
+
+//For deplyment 
+builder.Services.AddSingleton<IMongoClient>(s =>
+    new MongoClient(builder.Configuration.GetSection("MongoDB").Value));
+
+builder.Services.AddScoped(s =>
+    s.GetRequiredService<IMongoClient>().GetDatabase("CabBookingDB"));
+builder.Services.AddScoped(s =>
+    s.GetRequiredService<IMongoDatabase>().GetCollection<Location>("Locations"));
 
 builder.Services.AddScoped<LocationService.Services.LocationService>();
 builder.Services.AddSingleton<WeatherService>();

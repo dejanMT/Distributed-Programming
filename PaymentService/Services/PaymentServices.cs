@@ -63,7 +63,7 @@ namespace PaymentService.Services
         public async Task<decimal> GetTaxiFareAsync(decimal startLatitude, decimal startLongitude, decimal endLatitude, decimal endLongitude)
         {
             // Build the FareService URL (replace with your actual FareService URL)
-            var requestUrl = $"https://localhost:7183/api/Fare/estimate?startLatitude={startLatitude}&startLongitude={startLongitude}&endLatitude={endLatitude}&endLongitude={endLongitude}";
+            var requestUrl = $"https://fare-service-521568789858.europe-west1.run.app/api/Fare/estimate?startLatitude={startLatitude}&startLongitude={startLongitude}&endLatitude={endLatitude}&endLongitude={endLongitude}";
 
             var response = await _httpClient.GetAsync(requestUrl);
 

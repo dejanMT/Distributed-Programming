@@ -16,6 +16,15 @@
     var isLoggedIn = !string.IsNullOrEmpty(Context.Session.GetString("userEmail"));
 }
 
+@if (TempData["Message"] != null)
+{
+    var isSuccess = TempData["Message"].ToString().Contains("successfully");
+    <div class="alert @(isSuccess ? "alert-success" : "alert-danger") text-center">
+        @TempData["Message"]
+    </div>
+}
+
+
 <div class="container mt-5">
     <div class="row mb-4 text-center">
         <h2>Welcome to CabBooking</h2>
@@ -62,6 +71,7 @@
                             <button type="submit" class="btn btn-primary w-100">Confirm Booking</button>
                         </form>
 
+
                     </div>
                 </div>
             </div>
@@ -102,6 +112,36 @@
                 </a>
             </div>
         </div>
+
+        <div class="container mt-5">
+            <div class="row mb-4 text-center">
+                <h2>Add Favorite Location</h2>
+                <p class="text-muted">Save your most used pickup locations.</p>
+            </div>
+
+            <form asp-action="AddLocation" asp-controller="Home" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Location Name</label>
+                    <input name="Name" type="text" class="form-control" placeholder="Home, Work, Airport..." required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Address</label>
+                    <input name="Address" type="text" class="form-control" placeholder="Full Address" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Latitude</label>
+                    <input name="Latitude" type="number" step="any" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Longitude</label>
+                    <input name="Longitude" type="number" step="any" class="form-control" required />
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">Save Location</button>
+            </form>
+        </div>
+
+
     } else {
         <div class="container text-center mt-5">
             <h3>Please login to access the service</h3>

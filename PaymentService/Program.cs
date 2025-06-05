@@ -7,17 +7,30 @@ var builder = WebApplication.CreateBuilder(args);
 string apiKey = builder.Configuration["TaxiAPI:Key"];
 string host = builder.Configuration["TaxiAPI:Host"];
 
-builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient("mongodb://localhost:27017"));
-builder.Services.AddScoped(s => s.GetRequiredService<IMongoClient>().GetDatabase("CabBookingDB"));
-builder.Services.AddScoped(s => s.GetRequiredService<IMongoDatabase>().GetCollection<Payment>("Payments"));
+//builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient("mongodb://localhost:27017"));
+//builder.Services.AddScoped(s => s.GetRequiredService<IMongoClient>().GetDatabase("CabBookingDB"));
+//builder.Services.AddScoped(s => s.GetRequiredService<IMongoDatabase>().GetCollection<Payment>("Payments"));
+
+//builder.Services.AddSingleton<IMongoClient>(s =>
+//    new MongoClient(builder.Configuration.GetSection("MongoDB:ConnectionString").Value));
+
+builder.Services.AddSingleton<IMongoClient>(s =>
+    new MongoClient(builder.Configuration.GetSection("MongoDB").Value));
+
+builder.Services.AddScoped(s =>
+    s.GetRequiredService<IMongoClient>().GetDatabase("CabBookingDB"));
+builder.Services.AddScoped(s =>
+    s.GetRequiredService<IMongoDatabase>().GetCollection<Payment>("Payments"));
+
 
 builder.Services.AddHttpClient<PaymentServices>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:7183");
+    //client.BaseAddress = new Uri("http://localhost:7183");
+    client.BaseAddress = new Uri("https://fare-service-521568789858.europe-west1.run.app");
 });
 
 
-builder.Services.AddHttpClient<PaymentServices>();
+//builder.Services.AddHttpClient<PaymentServices>();
 //builder.Services.AddScoped<PaymentService.Services.PaymentServices>();
 
 //builder.Services.AddScoped<PaymentServices>(s =>

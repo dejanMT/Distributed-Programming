@@ -1,4 +1,5 @@
-﻿using CabBookingWebApp.Models;
+﻿//using CabBookingWebApp.Models;
+using Middleware.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.Json;
@@ -127,6 +128,17 @@ namespace GatewayAPI.Controllers
             var content = await response.Content.ReadAsStringAsync();
             return Content(content, "application/json");
         }
+
+        [HttpPost("locations")]
+        public async Task<IActionResult> AddLocation([FromBody] JsonElement payload)
+        {
+            var client = _httpClientFactory.CreateClient("Location");
+            var content = new StringContent(payload.GetRawText(), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync("/api/Location", content);
+            var result = await response.Content.ReadAsStringAsync();
+            return StatusCode((int)response.StatusCode, result);
+        }
+
 
 
 

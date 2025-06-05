@@ -6,17 +6,17 @@ builder.Services.AddControllers();
 
 builder.Services.AddHttpClient("Customer", c =>
 {
-    c.BaseAddress = new Uri("https://localhost:7207");
+    c.BaseAddress = new Uri("https://customer-service-521568789858.europe-west1.run.app");
 });
 
 builder.Services.AddHttpClient("Payment", c =>
 {
-    c.BaseAddress = new Uri("https://localhost:7094");
+    c.BaseAddress = new Uri("https://payment-service-521568789858.europe-west1.run.app");
 });
 
 builder.Services.AddHttpClient("Location", c =>
 {
-    c.BaseAddress = new Uri("https://localhost:7188");
+    c.BaseAddress = new Uri("https://location-service-521568789858.europe-west1.run.app");
 });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

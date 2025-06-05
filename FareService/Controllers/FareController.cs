@@ -20,8 +20,12 @@ namespace FareService.Controllers
         public async Task<IActionResult> GetFare(decimal startLatitude, decimal startLongitude, decimal endLatitude, decimal endLongitude)
         {
             var client = _httpClientFactory.CreateClient();
-            client.DefaultRequestHeaders.Add("X-RapidAPI-Key", _config["TaxiAPI:Key"]);
-            client.DefaultRequestHeaders.Add("X-RapidAPI-Host", _config["TaxiAPI:Host"]);
+            //ghal testing
+            //client.DefaultRequestHeaders.Add("X-RapidAPI-Key", _config["TaxiAPI:Key"]);
+            //client.DefaultRequestHeaders.Add("X-RapidAPI-Host", _config["TaxiAPI:Host"]);
+            
+            client.DefaultRequestHeaders.Add("X-RapidAPI-Key", _config["TaxiAPI-Key"]);
+            client.DefaultRequestHeaders.Add("X-RapidAPI-Host", _config["TaxiAPI-Host"]);
 
             var url = $"https://taxi-fare-calculator.p.rapidapi.com/search-geo?dep_lat={startLatitude}&dep_lng={startLongitude}&arr_lat={endLatitude}&arr_lng={endLongitude}";
 

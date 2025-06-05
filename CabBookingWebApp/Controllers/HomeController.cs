@@ -123,7 +123,7 @@ public class HomeController : Controller
         var payload = new
         {
             firstName = firstName,
-            lastName = lastName,
+            surname = lastName,
             email = email,
             password = password
         };
@@ -199,6 +199,37 @@ public class HomeController : Controller
         {
             TempData["Message"] = "Cab booking failed!";
         }
+
+        return RedirectToAction("Index");
+    }
+
+
+    [HttpPost]
+    public async Task<IActionResult> AddLocation(Location location)
+    {
+        var email = HttpContext.Session.GetString("userEmail");
+        if (string.IsNullOrEmpty(email))
+            return RedirectToAction("Login");
+
+        var client = _clientFactory.CreateClient();
+        var payload = new
+        {
+            UserEmail = email,
+            name = location.Name,
+            address = location.Address,
+            latitude = location.Latitude,
+            longitude = location.Longitude
+        };
+
+        var json = JsonSerializer.Serialize(payload);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await client.PostAsync($"{_config["GatewayApi:BaseUrl"]}/api/UserGateway/locations", content);
+
+        if (response.IsSuccessStatusCode)
+            TempData["Message"] = "Location saved successfully.";
+        else
+            TempData["Error"] = "Failed to save location.";
 
         return RedirectToAction("Index");
     }

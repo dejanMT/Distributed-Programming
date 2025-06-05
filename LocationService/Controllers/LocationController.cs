@@ -56,10 +56,12 @@ namespace LocationService.Controllers
         public async Task<IActionResult> GetWeather(string id)
         {
             var loc = await _services.GetLocationById(id);
-            if (loc == null) return NotFound("Location not found");
+            if (loc == null)
+                return NotFound("Location not found");
 
             var result = await _weather.GetWeatherAsync(loc.Latitude, loc.Longitude);
-            return Ok(new { id, result });
+
+            return Ok(new{result = result});
         }
 
     }

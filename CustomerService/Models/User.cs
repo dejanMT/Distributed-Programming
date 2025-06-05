@@ -20,7 +20,7 @@ namespace CustomerService.Models
         [Required]
         [StringLength(100, MinimumLength = 3)]
         public string? Password { get; set; }
-        //public List<Notification>? Notifications { get; set; }
+
         public List<Notification>? Notifications { get; set; } = new List<Notification>();
 
 
