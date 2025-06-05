@@ -27,8 +27,9 @@ public class HomeController : Controller
             return RedirectToAction("Login");
 
         var client = _clientFactory.CreateClient();
-        var baseUrl = _config["GatewayApi:BaseUrl"];
-        var locationsResponse = await client.GetAsync($"{baseUrl}/api/UserGateway/locations/{email}");
+        //var baseUrl = _config["GatewayApi:BaseUrl"];
+        var baseUrl = _config["GatewayApiUrl"];
+        var locationsResponse = await client.GetAsync($"{baseUrl}/gateway/locations/{email}");
         var locationsJson = await locationsResponse.Content.ReadAsStringAsync();
 
         var locations = JsonSerializer.Deserialize<List<Location>>(locationsJson, new JsonSerializerOptions
@@ -41,7 +42,7 @@ public class HomeController : Controller
 
         foreach (var loc in locations)
         {
-            var weatherResponse = await client.GetAsync($"{baseUrl}/api/UserGateway/weather/{loc.Id}");
+            var weatherResponse = await client.GetAsync($"{baseUrl}/gateway/weather/{loc.Id}");
             var weatherJson = await weatherResponse.Content.ReadAsStringAsync();
             var weather = JsonSerializer.Deserialize<WeatherResponse>(weatherJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
@@ -86,7 +87,10 @@ public class HomeController : Controller
         var json = JsonSerializer.Serialize(model);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await client.PostAsync($"{_config["GatewayApi:BaseUrl"]}/api/UserGateway/login", content);
+        //var baseUrl = _config["GatewayApi:BaseUrl"];
+        var baseUrl = _config["GatewayApiUrl"];
+        //var response = await client.PostAsync($"{baseUrl}/api/UserGateway/login", content);
+        var response = await client.PostAsync($"{baseUrl}/gateway/customers/login", content);
 
         if (response.IsSuccessStatusCode)
         {
@@ -131,7 +135,10 @@ public class HomeController : Controller
         var json = JsonSerializer.Serialize(payload);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await httpClient.PostAsync($"{_config["GatewayApi:BaseUrl"]}/api/UserGateway/register", content);
+        //var baseUrl = _config["GatewayApi:BaseUrl"];
+        var baseUrl = _config["GatewayApiUrl"];
+        //var response = await httpClient.PostAsync($"{baseUrl}/api/UserGateway/register", content);
+        var response = await httpClient.PostAsync($"{baseUrl}/gateway/customers/register", content);
 
         if (response.IsSuccessStatusCode)
         {
@@ -153,12 +160,15 @@ public class HomeController : Controller
         var email = HttpContext.Session.GetString("userEmail");
         if (string.IsNullOrEmpty(email)) return RedirectToAction("Login");
 
+        //var baseUrl = _config["GatewayApi:BaseUrl"];
+        var baseUrl = _config["GatewayApiUrl"];
+
         // Get weather
-        var weatherResponse = await _clientFactory.CreateClient().GetAsync($"{_config["GatewayApi:BaseUrl"]}/api/UserGateway/weather/{locationId}");
+        var weatherResponse = await _clientFactory.CreateClient().GetAsync($"{baseUrl}/gateway/weather/{locationId}");
         var weatherJson = await weatherResponse.Content.ReadAsStringAsync();
         var weather = JsonSerializer.Deserialize<WeatherResponse>(weatherJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        var locResponse = await _clientFactory.CreateClient().GetAsync($"{_config["GatewayApi:BaseUrl"]}/api/UserGateway/location/{locationId}");
+        var locResponse = await _clientFactory.CreateClient().GetAsync($"{baseUrl}/gateway/location/{locationId}");
         var locationJson = await locResponse.Content.ReadAsStringAsync();
         var root = JsonDocument.Parse(locationJson);
         var inner = root.RootElement.GetProperty("result").GetRawText();
@@ -189,7 +199,9 @@ public class HomeController : Controller
         var json = JsonSerializer.Serialize(model);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await client.PostAsync($"{_config["GatewayApi:BaseUrl"]}/api/UserGateway/payment?discount={applyDiscount}", content);
+        //var baseUrl = _config["GatewayApi:BaseUrl"];
+        var baseUrl = _config["GatewayApiUrl"];
+        var response = await client.PostAsync($"{baseUrl}/gateway/payment?discount={applyDiscount}", content);
 
         if (response.IsSuccessStatusCode)
         {
@@ -224,7 +236,9 @@ public class HomeController : Controller
         var json = JsonSerializer.Serialize(payload);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await client.PostAsync($"{_config["GatewayApi:BaseUrl"]}/api/UserGateway/locations", content);
+        //var baseUrl = _config["GatewayApi:BaseUrl"];
+        var baseUrl = _config["GatewayApiUrl"];
+        var response = await client.PostAsync($"{baseUrl}/gateway/locations", content);
 
         if (response.IsSuccessStatusCode)
             TempData["Message"] = "Location saved successfully.";

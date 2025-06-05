@@ -24,7 +24,9 @@ namespace CabBookingWebApp.Controllers
                 return RedirectToAction("Login", "Auth");
 
             var client = _httpClientFactory.CreateClient();
-            var response = await client.GetAsync($"{_config["GatewayApi:BaseUrl"]}/api/UserGateway/{email}/notifications");
+            //var baseUrl = _config["GatewayApi:BaseUrl"];
+            var baseUrl = _config["GatewayApiUrl"];
+            var response = await client.GetAsync($"{baseUrl}/gateway/{email}/notifications");
 
             if (!response.IsSuccessStatusCode)
                 return Content("Failed to load notifications.");
