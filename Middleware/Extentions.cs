@@ -15,7 +15,7 @@ namespace Middleware
 {
     public static class Extentions
     {
-
+        // / Adds JWT authentication services to the service collection 
         public static void AddJwt(this IServiceCollection services, IConfiguration configuration)
         {
             var options = new JwtOptions();
@@ -36,6 +36,7 @@ namespace Middleware
                 });
         }
 
+        // Adds JWT authentication services to the service collection with middleware support 
         public static void AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             var section = configuration.GetSection("jwt");

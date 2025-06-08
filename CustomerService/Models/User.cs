@@ -12,18 +12,13 @@ namespace CustomerService.Models
         public string? Id { get; set; }
         public string? FirstName { get; set; }
         public string? Surname { get; set; }
-
         [Required]
         [EmailAddress]
         public string? Email { get; set; }
-
         [Required]
         [StringLength(100, MinimumLength = 3)]
         public string? Password { get; set; }
-
         public List<Notification>? Notifications { get; set; } = new List<Notification>();
-
-
         public string? Salt { get; set; }
 
         public void SetPassword(string password, IEncryptor encryptor)

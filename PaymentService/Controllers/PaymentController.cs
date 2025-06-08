@@ -14,6 +14,7 @@ namespace PaymentService.Controllers
             _paymentService = paymentService;
         }
 
+        // Create a new payment
         [HttpPost]
         public async Task<IActionResult> Pay([FromBody] Payment payment, [FromQuery] bool discount = false)
         {
@@ -28,6 +29,7 @@ namespace PaymentService.Controllers
             }
         }
 
+        // Get all payments for a user by email
         [HttpGet("{email}")]
         public async Task<IActionResult> GetPayments(string email)
         {

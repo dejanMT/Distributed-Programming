@@ -12,25 +12,7 @@ namespace LocationService.Services
             _locations = locations;
         }
 
-        //public async Task<Location> GetLocationById(string id)
-        //{
-        //    return await _locations.Find(l => l.Id == id).FirstOrDefaultAsync();
-        //}
-
-        //public async Task<Location> GetLocationById(string id)
-        //{
-        //    var objectId = ObjectId.Parse(id);
-        //    var filter = Builders<Location>.Filter.Eq("_id", objectId);
-        //    return await _locations.Find(filter).FirstOrDefaultAsync();
-        //}
-
-        //public async Task<Location> GetLocationById(string id)
-        //{
-        //    var objectId = MongoDB.Bson.ObjectId.Parse(id);
-        //    var filter = Builders<Location>.Filter.Eq("_id", objectId);
-        //    return await _locations.Find(filter).FirstOrDefaultAsync();
-        //}
-
+        // gTE a location by ID
         public async Task<Location> GetLocationById(string id)
         {
             if (!ObjectId.TryParse(id, out var objectId))
@@ -42,19 +24,20 @@ namespace LocationService.Services
             return await _locations.Find(filter).FirstOrDefaultAsync();
         }
 
-
-
+        // Add a new location
         public async Task<Location> AddLocation(Location location)
         {
             await _locations.InsertOneAsync(location);
             return location;
         }
 
+        // Get all locations for a specific user by email
         public async Task<List<Location>> GetAllLocationsByEmail(string email)
         {
             return await _locations.Find(l => l.UserEmail == email).ToListAsync();
         }
 
+        // Update an existing location by ID
         public async Task<Location?> UpdateLocation(string id, Location updated)
         {
             updated.Id = id;
@@ -62,6 +45,7 @@ namespace LocationService.Services
             return result.IsAcknowledged ? updated : null;
         }
 
+        // delete a location by ID
         public async Task<bool> DeleteLocation(string id)
         {
             var result = await _locations.DeleteOneAsync(l => l.Id == id);

@@ -22,6 +22,7 @@ namespace CustomerService.Controllers
             _encryptor = encryptor;
         }
 
+        // tHIS is the endpoint for registering a new user
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] User user)
         {
@@ -30,13 +31,7 @@ namespace CustomerService.Controllers
             return Ok(result);
         }
 
-        //[HttpPost("login")]
-        //public async Task<IActionResult> Login([FromBody] User login)
-        //{
-        //    var user = await _userService.Login(login.Email, login.Password);
-        //    return user == null ? Unauthorized() : Ok(user);
-        //}
-
+        // This is the endpoint for logging in a user
         [HttpPost("login")]
         public async Task<ActionResult> Login([FromBody] UserDTO userDTO)
         {
@@ -47,6 +42,7 @@ namespace CustomerService.Controllers
                 return NotFound("User not found");
             }
 
+            // Validate the password using the encryptor
             bool isValid = user.ValidatePassword(userDTO.Password, _encryptor);
 
             if (!isValid)
@@ -59,6 +55,7 @@ namespace CustomerService.Controllers
             return Ok(token);
         }
 
+        // This is the endpoint for getting user details by email
         [HttpGet("{email}")]
         public async Task<IActionResult> GetUser(string email)
         {
@@ -66,6 +63,7 @@ namespace CustomerService.Controllers
             return user == null ? NotFound() : Ok(user);
         }
 
+        // This is the endpoint for getting user notifications by email
         [Authorize]
         [HttpGet("{email}/notifications")]
         public async Task<IActionResult> GetUserNotifications(string email)

@@ -16,16 +16,18 @@ namespace CustomerService.Controllers
             _users = users;
         }
 
+        // This endpoint retrieves all notifications for a user by their email.
         [HttpGet("{email}/notifications")]
         public async Task<IActionResult> GetNotifications(string email)
         {
-            var user = await _users.Find(u => u.Email == email).FirstOrDefaultAsync();
+            var user = await _users.Find(u => u.Email == email).FirstOrDefaultAsync(); // Find user by email
             if (user == null)
                 return NotFound("User not found");
 
             return Ok(user.Notifications ?? new List<Notification>());
         }
 
+        // This endpoint allows adding a cab-ready notification for a user by their email.
         [HttpPost("cabready")]
         public async Task<IActionResult> NotifyCabReady(string email, [FromBody] string rideMessage)
         {
@@ -45,6 +47,7 @@ namespace CustomerService.Controllers
             return Ok("Cab-ready notification added.");
         }
 
+        // This endpoint allows adding a discount notification for a user by their email.
         [HttpPost("discount")]
         public async Task<IActionResult> NotifyDiscount(string email)
         {

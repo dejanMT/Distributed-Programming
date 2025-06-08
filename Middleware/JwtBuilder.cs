@@ -23,6 +23,7 @@ namespace Middleware
             _options = options.Value;
         }
 
+        /// Generates a JWT token for the specified user ID
         public string GetToken(string userId)
         {
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Secret));
@@ -38,6 +39,7 @@ namespace Middleware
             return encodedJwt;
         }
 
+        /// Validates the JWT token and returns the user ID if valid, otherwise returns an empty string
         public string ValidateToken(string token)
         {
             var principal = GetPrincipal(token);
@@ -64,6 +66,7 @@ namespace Middleware
             return userId;
         }
 
+        /// Retrieves the ClaimsPrincipal from the JWT token
         private ClaimsPrincipal GetPrincipal(string token)
         {
             try

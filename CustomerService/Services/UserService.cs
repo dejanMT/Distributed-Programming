@@ -17,6 +17,7 @@ namespace CustomerService.Services
             _encryptor = encryptor;
         }
 
+        // This is the endpoint for registering a new user
         public async Task<User?> Register(User user)
         {
             var existing = await _users.Find(u => u.Email == user.Email).FirstOrDefaultAsync();
@@ -28,6 +29,7 @@ namespace CustomerService.Services
             return user;
         }
 
+        // This is the endpoint for logging in a user
         public async Task<User?> Login(string email, string password)
         {
             var user = await _users.Find(u => u.Email == email).FirstOrDefaultAsync();
@@ -36,11 +38,13 @@ namespace CustomerService.Services
             return user.ValidatePassword(password, _encryptor) ? user : null;
         }
 
+        // This is the endpoint for getting user details by email
         public async Task<User?> GetUserByEmail(string email)
         {
             return await _users.Find(u => u.Email == email).FirstOrDefaultAsync();
         }
 
+        // This is the endpoint for getting user details by email, excluding the password
         public async Task<User?> GetUserDetails(string email)
         {
             var user = await _users.Find(u => u.Email == email).FirstOrDefaultAsync();

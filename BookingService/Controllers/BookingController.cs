@@ -15,6 +15,7 @@ namespace BookingService.Controllers
             _bookingService = bookingService;
         }
 
+        // This endpoint is used to create a new booking
         [HttpPost]
         public async Task<IActionResult> CreateBooking([FromBody] Booking booking)
         {
@@ -22,6 +23,7 @@ namespace BookingService.Controllers
             return Ok(result);
         }
 
+        // This endpoint is used to get current bookings for a user
         [HttpGet("current/{email}")]
         public async Task<IActionResult> GetCurrentBookings(string email)
         {
@@ -29,6 +31,7 @@ namespace BookingService.Controllers
             return Ok(bookings);
         }
 
+        // This endpoint is used to mark a booking as completed
         [HttpGet("past/{email}")]
         public async Task<IActionResult> GetPastBookings(string email)
         {

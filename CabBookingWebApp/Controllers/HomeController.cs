@@ -22,18 +22,21 @@ public class HomeController : Controller
         _config = config;
     }
 
+    // Loads the home page with all teh neccessary data
     public async Task<IActionResult> Index()
     {
+        // Check if user is logged in if not direst to login page
         var email = HttpContext.Session.GetString("userEmail");
         if (string.IsNullOrEmpty(email))
-            return RedirectToAction("Login");
+            return RedirectToAction("Login", "Home");
 
         var client = _clientFactory.CreateClient();
         //var baseUrl = _config["GatewayApi:BaseUrl"];
         var baseUrl = _config["GatewayApiUrl"];
-        var locationsResponse = await client.GetAsync($"{baseUrl}/gateway/locations/all/{email}");
+        var locationsResponse = await client.GetAsync($"{baseUrl}/gateway/locations/all/{email}"); // get all locations for the user with the given email
         var locationsJson = await locationsResponse.Content.ReadAsStringAsync();
 
+        // Deserialize the JSON response into a list of Location objects
         var locations = JsonSerializer.Deserialize<List<Location>>(locationsJson, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -45,22 +48,21 @@ public class HomeController : Controller
 
         foreach (var loc in locations)
         {
-            var resp = await client.GetAsync($"{baseUrl}/gateway/locations/weather/{loc.Id}");
+            var resp = await client.GetAsync($"{baseUrl}/gateway/locations/weather/{loc.Id}"); // get weather for the location with the given location id
             var weatherJson = await resp.Content.ReadAsStringAsync();
 
+            // Parse the JSON response to extract the weather information
             using var doc = JsonDocument.Parse(weatherJson);
             var resultString = doc.RootElement.GetProperty("result").GetString()!;
-
-   
-            // 1) Get the part after "Temperature: "
+            // Extract the temperature from the result string
             var rawTemp = resultString
                 .Split("Temperature: ")[1]
-                .Trim(); 
+                .Trim();
 
-
+            // Remove the degree symbol and 'C' from the temperature string
             var numericTempString = rawTemp.TrimEnd('°', 'C', '℃').Trim();
 
-
+            // Try to parse the numeric temperature string into a float
             if (!float.TryParse(numericTempString,
                                 NumberStyles.Float,
                                 CultureInfo.InvariantCulture,
@@ -70,12 +72,16 @@ public class HomeController : Controller
                 tempValue = 0;
             }
 
+            // Create a new LocationWeatherViewModel object and populate it with the location and weather data
             weatherList.Add(new LocationWeatherViewModel
             {
+                LocationId = loc.Id,
                 LocationName = loc.Name,
                 Address = loc.Address,
                 Result = resultString,
-                Temperature = tempValue
+                Temperature = tempValue,
+                Longitude = loc.Longitude,
+                Latitude = loc.Latitude
             });
         }
 
@@ -102,6 +108,7 @@ public class HomeController : Controller
         return View();
     }
 
+    // Login action to handle user login
     [HttpPost]
     public async Task<IActionResult> Login(Models.LoginModel model)
     {
@@ -121,10 +128,9 @@ public class HomeController : Controller
             // Read the raw JSON/login response
             var loginJson = await response.Content.ReadAsStringAsync();
             var token = loginJson.Trim().Trim('"');
-            // Extract token (adjust property name if your service returns something else)
-           
+
              
-                     // Store both email and token in session
+            // Store both email and token in session
              HttpContext.Session.SetString("userEmail", model.Email);
              HttpContext.Session.SetString("AuthToken", token);
                      return RedirectToAction("Index", "Home");
@@ -137,7 +143,7 @@ public class HomeController : Controller
     public IActionResult Logout()
     {
         HttpContext.Session.Clear();
-        return RedirectToAction("Login");
+        return RedirectToAction("Login", "Home");
     }
 
     [HttpGet]
@@ -146,9 +152,11 @@ public class HomeController : Controller
         return View();
     }
 
+    // Signup action to handles new user registration
     [HttpPost]
     public async Task<IActionResult> Signup(string firstName, string lastName, string email, string password, string confirmPassword)
     {
+        //This checks if teh password and confirm password matcheSd 
         if (password != confirmPassword)
         {
             ViewData["Error"] = "Passwords do not match.";
@@ -156,6 +164,7 @@ public class HomeController : Controller
         }
 
         var httpClient = _clientFactory.CreateClient();
+        // Create the payload for registration
         var payload = new
         {
             firstName = firstName,
@@ -164,6 +173,7 @@ public class HomeController : Controller
             password = password
         };
 
+        // Serialize the payload to JSON
         var json = JsonSerializer.Serialize(payload);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
@@ -182,53 +192,14 @@ public class HomeController : Controller
         return View();
     }
 
-    /// <summary>
-    /// Get weather by id (NOT IN USE)
-    /// </summary>
-    /// <param name="locationId"></param>
-    /// <returns></returns>
-    public async Task<IActionResult> CheckWeather(string locationId)
-    {
-        var email = HttpContext.Session.GetString("userEmail");
-        if (string.IsNullOrEmpty(email)) return RedirectToAction("Login");
-
-        //var baseUrl = _config["GatewayApi:BaseUrl"];
-        var baseUrl = _config["GatewayApiUrl"];
-
-        // Get weather
-        var weatherResponse = await _clientFactory.CreateClient().GetAsync($"{baseUrl}/gateway/weather/{locationId}");
-        var weatherJson = await weatherResponse.Content.ReadAsStringAsync();
-        var weather = JsonSerializer.Deserialize<WeatherResponse>(weatherJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-        var locResponse = await _clientFactory.CreateClient().GetAsync($"{baseUrl}/gateway/locations/{locationId}");
-        var locationJson = await locResponse.Content.ReadAsStringAsync();
-        var root = JsonDocument.Parse(locationJson);
-        var inner = root.RootElement.GetProperty("result").GetRawText();
-        var location = JsonSerializer.Deserialize<Location>(inner, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-        if (weather != null && location != null)
-        {
-            ViewBag.Weather = new LocationWeatherViewModel
-            {
-                LocationName = location.Name,
-                Address = location.Address,
-                Result = weather.Result,
-                Temperature = weather.Temperature
-            };
-        }
-
-        return View("Index");
-    }
-
-
-
+    //This action handles the cab booking process
     [HttpPost]
     public async Task<IActionResult> BookCab(Payment model, bool applyDiscount = false)
     {
-        // 1) Generate booking ID
+        // Auto Generate booking ID
         model.BookingId = Guid.NewGuid().ToString();
 
-        // 2) Prepare HttpClient and attach Bearer token
+        // Prepare HttpClient and attach Bearer token
         var client = _clientFactory.CreateClient();
         var token = HttpContext.Session.GetString("AuthToken");
         if (!string.IsNullOrEmpty(token))
@@ -237,16 +208,15 @@ public class HomeController : Controller
                 new AuthenticationHeaderValue("Bearer", token);
         }
 
-        // 3) Serialize payload
+        // Serialize payload
         var json = JsonSerializer.Serialize(model);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        // 4) Call the correct Ocelot route: plural + trailing slash
+        // Call the correct Ocelot route: plural + trailing slash
         var baseUrl = _config["GatewayApiUrl"];
         var url = $"{baseUrl}/gateway/payments/?discount={applyDiscount}";
         var response = await client.PostAsync(url, content);
 
-        // 5) Check result as before
         if (response.IsSuccessStatusCode)
         {
             TempData["Message"] = "Cab booked successfully!";
@@ -260,16 +230,17 @@ public class HomeController : Controller
     }
 
 
-
+    //This action handles adding a new favourite location
     [HttpPost]
     public async Task<IActionResult> AddLocation(Location location)
     {
+        // Check if user is logged in, if not redirect to login page
         var email = HttpContext.Session.GetString("userEmail");
         if (string.IsNullOrEmpty(email))
-            return RedirectToAction("Login");
+            return RedirectToAction("Login", "Home");
 
         var client = _clientFactory.CreateClient();
-        var payload = new
+        var payload = new // Create a payload with the location details and user email  
         {
             UserEmail = email,
             name = location.Name,
@@ -278,12 +249,13 @@ public class HomeController : Controller
             longitude = location.Longitude
         };
 
+        // Serialize the payload to JSON    
         var json = JsonSerializer.Serialize(payload);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         //var baseUrl = _config["GatewayApi:BaseUrl"];
         var baseUrl = _config["GatewayApiUrl"];
-        var response = await client.PostAsync($"{baseUrl}/gateway/locations", content);
+        var response = await client.PostAsync($"{baseUrl}/gateway/locations", content); // Post the new location to the API
 
         if (response.IsSuccessStatusCode)
             TempData["Message"] = "Location saved successfully.";
@@ -293,7 +265,53 @@ public class HomeController : Controller
         return RedirectToAction("Index");
     }
 
+    //This action handles deleting of a favourite location
+    [HttpPost]
+    public async Task<IActionResult> DeleteLocation(string id)
+    {
+        // Check if user is logged in, if not redirect to login page
+        var email = HttpContext.Session.GetString("userEmail");
+        if (string.IsNullOrEmpty(email))
+            return RedirectToAction("Login", "Home");
 
+        var client = _clientFactory.CreateClient();
+        var baseUrl = _config["GatewayApiUrl"];
+        var response = await client.DeleteAsync($"{baseUrl}/gateway/locations/delete/{id}"); // Delete the location with the given id
+
+        TempData["Message"] = response.IsSuccessStatusCode ? "Location deleted successfully." : "Failed to delete location.";
+        return RedirectToAction("Index");
+    }
+
+    //This action handles updating of a favourite location
+    [HttpPost]
+    public async Task<IActionResult> UpdateLocation(Location location)
+    {
+        // Check if user is logged in, if not redirect to login page
+        var email = HttpContext.Session.GetString("userEmail");
+        if (string.IsNullOrEmpty(email))
+            return RedirectToAction("Login", "Home");
+
+
+        var client = _clientFactory.CreateClient();
+        var payload = new // Create a payload with the updated location details and user email
+        {
+            Id = location.Id,
+            UserEmail = email,
+            Name = location.Name,
+            Address = location.Address,
+            Latitude = location.Latitude,
+            Longitude = location.Longitude
+        };
+
+        var json = JsonSerializer.Serialize(payload);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var baseUrl = _config["GatewayApiUrl"];
+        var response = await client.PutAsync($"{baseUrl}/gateway/locations/update/{location.Id}", content); // Update the location with the given id
+
+        TempData["Message"] = response.IsSuccessStatusCode ? "Location updated successfully." : "Failed to update location.";
+        return RedirectToAction("Index");
+    }
 
 
 

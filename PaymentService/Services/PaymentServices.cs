@@ -21,48 +21,10 @@ namespace PaymentService.Services
             host = config["TaxiAPI:Host"]!;
         }
 
-        //public async Task<decimal> GetTaxiFareAsync(decimal startLatitude, decimal startLongitude, decimal endLatitude, decimal endLongitude)
-        //{
-        //    var requestUrl = $"https://taxi-fare-calculator.p.rapidapi.com/search-geo?dep_lat={startLatitude}&dep_lng={startLongitude}&arr_lat={endLatitude}&arr_lng={endLongitude}";
-
-        //    using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
-        //    request.Headers.Add("X-RapidAPI-Key", apiKey);
-        //    request.Headers.Add("X-RapidAPI-Host", host);
-
-        //    using var response = await _httpClient.SendAsync(request);
-        //    if (!response.IsSuccessStatusCode)
-        //    {
-        //        throw new HttpRequestException($"request failed - status code: {response.StatusCode}");
-        //    }
-
-        //    var jsonResponse = await response.Content.ReadAsStringAsync();
-        //    using var document = JsonDocument.Parse(jsonResponse);
-        //    var root = document.RootElement;
-
-        //    if (!root.TryGetProperty("journey", out var journey))
-        //    {
-        //        throw new Exception("journey is missing from the response");
-        //    }
-
-        //    if (!journey.TryGetProperty("fares", out var fares) ||  fares.GetArrayLength() == 0 || fares.ValueKind != JsonValueKind.Array)
-        //    {
-        //        throw new Exception("fares is missing from the array");
-        //    }
-
-        //    var firstFare = fares[0];
-
-        //    if (!firstFare.TryGetProperty("price_in_cents", out var priceElement) || priceElement.ValueKind != JsonValueKind.Number)
-        //    {
-        //        throw new Exception("'price_in_cents is missing");
-        //    }
-
-        //    var cents = priceElement.GetInt32();
-        //    return cents / 100m;
-        //}
-
+        // Get the estimated taxi fare from the FareService
         public async Task<decimal> GetTaxiFareAsync(decimal startLatitude, decimal startLongitude, decimal endLatitude, decimal endLongitude)
         {
-            // Build the FareService URL (replace with your actual FareService URL)
+            // Use the FareService API to get the estimated fare
             var requestUrl = $"https://fare-service-521568789858.europe-west1.run.app/api/Fare/estimate?startLatitude={startLatitude}&startLongitude={startLongitude}&endLatitude={endLatitude}&endLongitude={endLongitude}";
 
             var response = await _httpClient.GetAsync(requestUrl);
@@ -80,9 +42,7 @@ namespace PaymentService.Services
         }
 
 
-
-
-
+        // Calculate the total fare based on various parameters
         public decimal CalculateTotal(decimal baseFare, string cabType, DateTime time, int passengers, bool discount)
         {
 
@@ -141,6 +101,7 @@ namespace PaymentService.Services
             return baseFare * cabMultiplier * timeMultiplier * passengerMultiplier * discountMultiplier;
         }
 
+        // Create a new payment and calculate the total fare
         public async Task<Payment> CreatePayment(Payment payment, bool applyDiscount)
         {
             var baseFare = await GetTaxiFareAsync(
@@ -155,6 +116,7 @@ namespace PaymentService.Services
             payment.DiscountApplied = applyDiscount;
 
             await _payments.InsertOneAsync(payment);
+            // Notify the user that their payment was successful after 3 minutes
             _ = Task.Run(async () =>
             {
                 await Task.Delay(TimeSpan.FromMinutes(3));
@@ -162,6 +124,7 @@ namespace PaymentService.Services
                 var rideInfo = $"Your cab is waiting for you. Pickup: ({payment.StartLatitude}, {payment.StartLongitude}) → Drop-off: ({payment.EndLatitude}, {payment.EndLongitude}), Reference No. {payment.BookingId}";
                 var notifyUrl = $"https://customer-service-521568789858.europe-west1.run.app/api/Notification/cabready?email={payment.UserEmail}";
 
+                // Send the notification to the customer service
                 try
                 {
                     using var client = new HttpClient();
@@ -176,7 +139,7 @@ namespace PaymentService.Services
             });
 
 
-
+            // Check if the user is eligible for a discount after 3 non-discounted bookings
             var pastBookings = await _payments.Find(p => p.UserEmail == payment.UserEmail).ToListAsync();
             var nonDiscountedCount = pastBookings.Count(p => p.DiscountApplied == false);
 
@@ -203,7 +166,7 @@ namespace PaymentService.Services
         }
 
 
-
+        // Get all payments for a specific user by email
         public async Task<List<Payment>> GetPayments(string email)
         {
             return await _payments.Find(p => p.UserEmail == email).ToListAsync();

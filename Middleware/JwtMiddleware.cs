@@ -19,6 +19,7 @@ namespace Middleware
         {
             _jwtBuilder = jwtBuilder;
         }
+
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             // Get the token from the Authorization header
