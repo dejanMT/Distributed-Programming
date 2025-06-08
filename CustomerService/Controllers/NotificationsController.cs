@@ -45,5 +45,25 @@ namespace CustomerService.Controllers
             return Ok("Cab-ready notification added.");
         }
 
+        [HttpPost("discount")]
+        public async Task<IActionResult> NotifyDiscount(string email)
+        {
+            var user = await _users.Find(u => u.Email == email).FirstOrDefaultAsync();
+            if (user == null)
+                return NotFound("User not found");
+
+            var notification = new Notification
+            {
+                Message = "Dicsount Unlocked!",
+                Date = DateTime.UtcNow
+            };
+
+            var update = Builders<User>.Update.Push(u => u.Notifications, notification);
+            await _users.UpdateOneAsync(u => u.Email == email, update);
+
+            return Ok("Discount notification added.");
+        }
+
+
     }
 }

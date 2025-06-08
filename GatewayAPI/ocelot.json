@@ -1,6 +1,17 @@
 {
-
   "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/User/{email}/notifications",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "customer-service-521568789858.europe-west1.run.app",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/customers/{email}/notifications",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
     {
       "DownstreamPathTemplate": "/api/User/{everything}",
       "DownstreamScheme": "https",
@@ -11,6 +22,18 @@
         }
       ],
       "UpstreamPathTemplate": "/gateway/customers/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Notification/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "customer-service-521568789858.europe-west1.run.app",
+          "Port": 443
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/notifications/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {

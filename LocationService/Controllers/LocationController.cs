@@ -52,17 +52,37 @@ namespace LocationService.Controllers
             return success ? Ok() : NotFound();
         }
 
+        //[HttpGet("weather/{id}")]
+        //public async Task<IActionResult> GetWeather(string id)
+        //{
+        //    var loc = await _services.GetLocationById(id);
+        //    if (loc == null)
+        //        return NotFound("Location not found");
+
+        //    var result = await _weather.GetWeatherAsync(loc.Latitude, loc.Longitude);
+
+        //    return Ok(new{result = result});
+        //}
+
         [HttpGet("weather/{id}")]
         public async Task<IActionResult> GetWeather(string id)
         {
             var loc = await _services.GetLocationById(id);
             if (loc == null)
-                return NotFound("Location not found");
+                return NotFound();
 
-            var result = await _weather.GetWeatherAsync(loc.Latitude, loc.Longitude);
-
-            return Ok(new{result = result});
+            try
+            {
+                var result = await _weather.GetWeatherAsync(loc.Latitude, loc.Longitude);
+                return Ok(new { result });
+            }
+            catch (HttpRequestException ex)
+            {
+                // Log ex here
+                return StatusCode(502, "Weather lookup failed");
+            }
         }
+
 
     }
 }

@@ -13,11 +13,12 @@ namespace LocationService.Services
         private readonly string apiKey;
         private readonly string host;
 
-        public WeatherService(IConfiguration config)
+        public WeatherService(HttpClient httpClient, IConfiguration config)
         {
-            _httpClient = new HttpClient();
-            apiKey = config["WeatherAPI:Key"]!;
-            host = config["WeatherAPI:Host"]!;
+            //_httpClient = new HttpClient();
+            _httpClient = httpClient;
+            apiKey = config["WeatherAPI-Key"]!;
+            host = config["WeatherAPI-Host"]!;
         }
 
         public async Task<string> GetWeatherAsync(decimal lat, decimal lng)

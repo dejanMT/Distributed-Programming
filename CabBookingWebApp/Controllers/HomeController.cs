@@ -1,9 +1,11 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using CabBookingWebApp.Models;
 using System.Text.Json;
 using System.Text;
 using System.Net.Http;
+using System.Globalization;
+using System.Net.Http.Headers;
 
 namespace CabBookingWebApp.Controllers;
 
@@ -29,7 +31,7 @@ public class HomeController : Controller
         var client = _clientFactory.CreateClient();
         //var baseUrl = _config["GatewayApi:BaseUrl"];
         var baseUrl = _config["GatewayApiUrl"];
-        var locationsResponse = await client.GetAsync($"{baseUrl}/gateway/locations/{email}");
+        var locationsResponse = await client.GetAsync($"{baseUrl}/gateway/locations/all/{email}");
         var locationsJson = await locationsResponse.Content.ReadAsStringAsync();
 
         var locations = JsonSerializer.Deserialize<List<Location>>(locationsJson, new JsonSerializerOptions
@@ -38,25 +40,45 @@ public class HomeController : Controller
         });
 
 
+
         var weatherList = new List<LocationWeatherViewModel>();
 
         foreach (var loc in locations)
         {
-            var weatherResponse = await client.GetAsync($"{baseUrl}/gateway/weather/{loc.Id}");
-            var weatherJson = await weatherResponse.Content.ReadAsStringAsync();
-            var weather = JsonSerializer.Deserialize<WeatherResponse>(weatherJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var resp = await client.GetAsync($"{baseUrl}/gateway/locations/weather/{loc.Id}");
+            var weatherJson = await resp.Content.ReadAsStringAsync();
 
-            if (weather != null)
+            using var doc = JsonDocument.Parse(weatherJson);
+            var resultString = doc.RootElement.GetProperty("result").GetString()!;
+
+   
+            // 1) Get the part after "Temperature: "
+            var rawTemp = resultString
+                .Split("Temperature: ")[1]
+                .Trim(); 
+
+
+            var numericTempString = rawTemp.TrimEnd('°', 'C', '℃').Trim();
+
+
+            if (!float.TryParse(numericTempString,
+                                NumberStyles.Float,
+                                CultureInfo.InvariantCulture,
+                                out var tempValue))
             {
-                weatherList.Add(new LocationWeatherViewModel
-                {
-                    LocationName = loc.Name,
-                    Address = loc.Address,
-                    Result = weather.Result,
-                    Temperature = weather.Temperature
-                });
+
+                tempValue = 0;
             }
+
+            weatherList.Add(new LocationWeatherViewModel
+            {
+                LocationName = loc.Name,
+                Address = loc.Address,
+                Result = resultString,
+                Temperature = tempValue
+            });
         }
+
 
         ViewBag.WeatherList = weatherList;
         return View();
@@ -94,8 +116,18 @@ public class HomeController : Controller
 
         if (response.IsSuccessStatusCode)
         {
-            HttpContext.Session.SetString("userEmail", model.Email);
-            return RedirectToAction("Index", "Home");
+            //HttpContext.Session.SetString("userEmail", model.Email);
+            //return RedirectToAction("Index", "Home");
+            // Read the raw JSON/login response
+            var loginJson = await response.Content.ReadAsStringAsync();
+            var token = loginJson.Trim().Trim('"');
+            // Extract token (adjust property name if your service returns something else)
+           
+             
+                     // Store both email and token in session
+             HttpContext.Session.SetString("userEmail", model.Email);
+             HttpContext.Session.SetString("AuthToken", token);
+                     return RedirectToAction("Index", "Home");
         }
 
         ViewBag.Error = "Invalid login.";
@@ -168,7 +200,7 @@ public class HomeController : Controller
         var weatherJson = await weatherResponse.Content.ReadAsStringAsync();
         var weather = JsonSerializer.Deserialize<WeatherResponse>(weatherJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        var locResponse = await _clientFactory.CreateClient().GetAsync($"{baseUrl}/gateway/location/{locationId}");
+        var locResponse = await _clientFactory.CreateClient().GetAsync($"{baseUrl}/gateway/locations/{locationId}");
         var locationJson = await locResponse.Content.ReadAsStringAsync();
         var root = JsonDocument.Parse(locationJson);
         var inner = root.RootElement.GetProperty("result").GetRawText();
@@ -193,16 +225,28 @@ public class HomeController : Controller
     [HttpPost]
     public async Task<IActionResult> BookCab(Payment model, bool applyDiscount = false)
     {
+        // 1) Generate booking ID
+        model.BookingId = Guid.NewGuid().ToString();
 
-         model.BookingId = Guid.NewGuid().ToString();
+        // 2) Prepare HttpClient and attach Bearer token
         var client = _clientFactory.CreateClient();
+        var token = HttpContext.Session.GetString("AuthToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        // 3) Serialize payload
         var json = JsonSerializer.Serialize(model);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        //var baseUrl = _config["GatewayApi:BaseUrl"];
+        // 4) Call the correct Ocelot route: plural + trailing slash
         var baseUrl = _config["GatewayApiUrl"];
-        var response = await client.PostAsync($"{baseUrl}/gateway/payment?discount={applyDiscount}", content);
+        var url = $"{baseUrl}/gateway/payments/?discount={applyDiscount}";
+        var response = await client.PostAsync(url, content);
 
+        // 5) Check result as before
         if (response.IsSuccessStatusCode)
         {
             TempData["Message"] = "Cab booked successfully!";
@@ -214,6 +258,7 @@ public class HomeController : Controller
 
         return RedirectToAction("Index");
     }
+
 
 
     [HttpPost]

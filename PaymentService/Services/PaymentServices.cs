@@ -160,7 +160,7 @@ namespace PaymentService.Services
                 await Task.Delay(TimeSpan.FromMinutes(3));
 
                 var rideInfo = $"Your cab is waiting for you. Pickup: ({payment.StartLatitude}, {payment.StartLongitude}) → Drop-off: ({payment.EndLatitude}, {payment.EndLongitude}), Reference No. {payment.BookingId}";
-                var notifyUrl = $"https://localhost:7207/api/Notification/cabready?email={payment.UserEmail}";
+                var notifyUrl = $"https://customer-service-521568789858.europe-west1.run.app/api/Notification/cabready?email={payment.UserEmail}";
 
                 try
                 {
@@ -183,7 +183,7 @@ namespace PaymentService.Services
             if (nonDiscountedCount == 3)
             {
                 using var eventClient = new HttpClient();
-                var notifyUrl = $"https://localhost:7207/api/Notification/discount?email={payment.UserEmail}";
+                var notifyUrl = $"https://customer-service-521568789858.europe-west1.run.app/api/Notification/discount?email={payment.UserEmail}";
 
                 try
                 {

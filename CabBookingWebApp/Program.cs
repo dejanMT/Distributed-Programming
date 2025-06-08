@@ -10,6 +10,7 @@ builder.Services.AddControllersWithViews()
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     });
 
+
 builder.Services.AddHttpClient();
 
 builder.Services.AddSession(options =>

@@ -4,6 +4,13 @@ using LocationService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(Int32.Parse(port));
+});
+
+
 //builder.Services.AddSingleton<IMongoClient>(_ => new MongoClient("mongodb://localhost:27017"));
 //builder.Services.AddScoped(s => s.GetRequiredService<IMongoClient>().GetDatabase("CabBookingDB"));
 //builder.Services.AddScoped(s => s.GetRequiredService<IMongoDatabase>().GetCollection<Location>("Locations"));
@@ -22,7 +29,8 @@ builder.Services.AddScoped(s =>
     s.GetRequiredService<IMongoDatabase>().GetCollection<Location>("Locations"));
 
 builder.Services.AddScoped<LocationService.Services.LocationService>();
-builder.Services.AddSingleton<WeatherService>();
+//builder.Services.AddSingleton<WeatherService>();
+builder.Services.AddHttpClient<WeatherService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
